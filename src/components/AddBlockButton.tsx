@@ -169,7 +169,7 @@ const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock }) => {
                   <Label htmlFor="priority">Priority</Label>
                   <Select
                     value={formData.priority}
-                    onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                    onValueChange={(value: Priority) => setFormData({ ...formData, priority: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
