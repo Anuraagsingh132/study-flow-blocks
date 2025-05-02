@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StudyBlock, Note, Goal } from "@/types";
+import { StudyBlock, Note, Goal, Priority } from "@/types";
 
 interface AddBlockButtonProps {
   onAddBlock: (blockType: string, data: any) => void;
@@ -20,7 +20,7 @@ const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock }) => {
     topic: "",
     startTime: "",
     endTime: "",
-    priority: "medium",
+    priority: "medium" as Priority,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,7 +56,7 @@ const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock }) => {
       topic: "",
       startTime: "",
       endTime: "",
-      priority: "medium",
+      priority: "medium" as Priority,
     });
     
     setOpen(false);
