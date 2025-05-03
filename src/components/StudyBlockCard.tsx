@@ -7,9 +7,10 @@ import { format, parseISO, isToday } from "date-fns";
 interface StudyBlockCardProps {
   block: StudyBlock;
   onToggleCompletion: (completed: boolean) => void;
+  onBlockUpdated?: () => Promise<void>;
 }
 
-const StudyBlockCard: React.FC<StudyBlockCardProps> = ({ block, onToggleCompletion }) => {
+const StudyBlockCard: React.FC<StudyBlockCardProps> = ({ block, onToggleCompletion, onBlockUpdated }) => {
   // Format the date and time
   const formatTimeRange = (start: string, end: string) => {
     const startDate = parseISO(start);
@@ -50,6 +51,14 @@ const StudyBlockCard: React.FC<StudyBlockCardProps> = ({ block, onToggleCompleti
         return "bg-orange-100 text-orange-800";
       default:
         return "bg-green-100 text-green-800";
+    }
+  };
+
+  // Handle toggling completion
+  const handleToggleCompletion = (completed: boolean) => {
+    onToggleCompletion(completed);
+    if (onBlockUpdated) {
+      onBlockUpdated();
     }
   };
 
@@ -98,7 +107,7 @@ const StudyBlockCard: React.FC<StudyBlockCardProps> = ({ block, onToggleCompleti
         </span>
 
         <button
-          onClick={() => onToggleCompletion(!block.completed)}
+          onClick={() => handleToggleCompletion(!block.completed)}
           className={`px-3 py-1 rounded-md text-sm ${
             block.completed
               ? "bg-gray-200 hover:bg-gray-300 text-gray-700"
