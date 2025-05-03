@@ -9,6 +9,75 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_image: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          unlocked: boolean
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_image: string
+          created_at?: string
+          description: string
+          id?: string
+          name: string
+          unlocked?: boolean
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_image?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          unlocked?: boolean
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_challenges: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string
+          expires_at: string
+          id: string
+          title: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description: string
+          expires_at: string
+          id?: string
+          title: string
+          user_id: string
+          xp: number
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          expires_at?: string
+          id?: string
+          title?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       goal_steps: {
         Row: {
           completed: boolean
@@ -110,6 +179,47 @@ export type Database = {
         }
         Relationships: []
       }
+      revision_plans: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          priority: string
+          review_date: string
+          subject_id: string
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          priority: string
+          review_date: string
+          subject_id: string
+          topic: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          priority?: string
+          review_date?: string
+          subject_id?: string
+          topic?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revision_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_blocks: {
         Row: {
           completed: boolean
@@ -148,6 +258,83 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      study_companion: {
+        Row: {
+          created_at: string
+          energy: number
+          happiness: number
+          last_interaction: string
+          level: number
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          energy?: number
+          happiness?: number
+          last_interaction?: string
+          level?: number
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          energy?: number
+          happiness?: number
+          last_interaction?: string
+          level?: number
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_sessions: {
+        Row: {
+          completed: boolean
+          duration: number
+          ended_at: string | null
+          id: string
+          started_at: string
+          subject_id: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          completed?: boolean
+          duration: number
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          subject_id?: string | null
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          completed?: boolean
+          duration?: number
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          subject_id?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subjects: {
         Row: {
@@ -212,12 +399,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stats: {
+        Row: {
+          created_at: string
+          current_xp: number
+          last_study_date: string | null
+          level: number
+          study_streak: number
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_xp?: number
+          last_study_date?: string | null
+          level?: number
+          study_streak?: number
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_xp?: number
+          last_study_date?: string | null
+          level?: number
+          study_streak?: number
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_daily_challenge_for_user: {
+        Args: { user_id_param: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

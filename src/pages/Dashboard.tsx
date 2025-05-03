@@ -1,260 +1,258 @@
 
-import React, { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import React, { useEffect, useState } from "react";
 import StudyBlockCard from "@/components/StudyBlockCard";
 import AddBlockButton from "@/components/AddBlockButton";
-import { StudyBlock, Goal } from "@/types";
-import { getStudyBlocks, toggleStudyBlockCompletion, createStudyBlock } from "@/services/supabase/studyBlocks";
-import { getGoals } from "@/services/supabase/goals";
-import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar as CalendarIcon, Clock, ListTodo } from "lucide-react";
+import { getStudyBlocks, createStudyBlock } from "@/services/supabase/studyBlocks";
+import { StudyBlock } from "@/types";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, isSameDay, parseISO, isAfter, addDays } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const Dashboard: React.FC = () => {
-  const [studyBlocks, setStudyBlocks] = useState<StudyBlock[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+// New feature components
+import StudySuggestionsWidget from "@/components/StudySuggestionsWidget";
+import StudyCompanionWidget from "@/components/StudyCompanionWidget";
+import PomodoroTimer from "@/components/PomodoroTimer";
+import RevisionPlanner from "@/components/RevisionPlanner";
+import AchievementWidget from "@/components/AchievementWidget";
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const [blocks, setBlocks] = useState<StudyBlock[]>([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<"daily" | "weekly">("daily");
-  const [date, setDate] = useState(new Date());
-  const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [activeTab, setActiveTab] = useState<string>("today");
+  const [showCompanion, setShowCompanion] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, [date]);
+    loadBlocks();
+  }, [selectedDate, user]);
 
-  const loadData = async () => {
+  const loadBlocks = async () => {
     try {
       setLoading(true);
-      const [blocksData, goalsData] = await Promise.all([
-        getStudyBlocks(date),
-        getGoals()
-      ]);
       
-      setStudyBlocks(blocksData);
-      setGoals(goalsData);
+      // Get blocks for the selected date
+      const blocksData = await getStudyBlocks(selectedDate);
+      
+      // Sort by start time
+      const sortedBlocks = [...blocksData].sort((a, b) => {
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      });
+      
+      setBlocks(sortedBlocks);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
-      toast.error("Failed to load dashboard data");
+      console.error("Error loading study blocks:", error);
+      toast.error("Failed to load study blocks");
     } finally {
       setLoading(false);
     }
   };
-  
-  const handleToggleCompletion = async (id: string, completed: boolean) => {
-    try {
-      await toggleStudyBlockCompletion(id, completed);
-      
-      setStudyBlocks((blocks) =>
-        blocks.map((block) =>
-          block.id === id ? { ...block, completed } : block
-        )
-      );
-      
-      toast.success("Status updated successfully!");
-    } catch (error) {
-      console.error("Error updating study block status:", error);
-      toast.error("Failed to update status");
-    }
-  };
-  
-  const completedBlocksCount = studyBlocks.filter((block) => block.completed).length;
-  const completionPercentage = studyBlocks.length > 0
-    ? Math.round((completedBlocksCount / studyBlocks.length) * 100)
-    : 0;
-    
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    toast.info("Reordering is supported in the full version");
-  };
-  
+
   const handleAddBlock = async (blockType: string, data: any) => {
-    if (blockType === "study") {
-      try {
-        const newBlock = await createStudyBlock({
-          subject: data.subject,
-          topic: data.topic,
-          start_time: data.startTime,
-          end_time: data.endTime,
-          priority: data.priority,
-          completed: false
-        });
-        
-        setStudyBlocks((blocks) => [...blocks, newBlock]);
-        toast.success("Study block added successfully!");
-      } catch (error) {
-        console.error("Error adding study block:", error);
-        toast.error("Failed to add study block");
+    try {
+      // Format times to ISO string
+      const newBlock = await createStudyBlock({
+        subject: data.subject,
+        topic: data.topic,
+        start_time: data.startTime.toISOString(),
+        end_time: data.endTime.toISOString(),
+        priority: data.priority,
+      });
+      
+      // Only add to the current view if the dates match
+      if (isSameDay(parseISO(newBlock.startTime), selectedDate)) {
+        setBlocks([...blocks, newBlock]);
       }
+      
+      toast.success("Study block added successfully");
+    } catch (error) {
+      console.error("Error adding study block:", error);
+      toast.error("Failed to add study block");
     }
   };
 
+  const handleSuggestionSelect = (suggestion: any) => {
+    // Open AddBlockButton with pre-filled data based on suggestion
+    // Implementation would depend on how AddBlockButton is designed
+    toast.info(`Selected suggestion: ${suggestion.title}`);
+  };
+  
+  const handleDateChange = (tab: string) => {
+    setActiveTab(tab);
+    
+    switch (tab) {
+      case "today":
+        setSelectedDate(new Date());
+        break;
+      case "tomorrow":
+        setSelectedDate(addDays(new Date(), 1));
+        break;
+      case "thisWeek":
+        setSelectedDate(new Date()); // This would be a special case handled in the view
+        break;
+      default:
+        setSelectedDate(new Date());
+    }
+  };
+
+  const getBlocksForCurrentView = () => {
+    if (activeTab !== "thisWeek") {
+      return blocks;
+    }
+    
+    // For "This Week" tab, we'd want to show blocks for the whole week
+    // In a real implementation, you'd fetch blocks for the entire week
+    return blocks;
+  };
+
+  const visibleBlocks = getBlocksForCurrentView();
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{format(date, "EEEE, MMMM d")}</h1>
-          <p className="text-gray-500">Here's what you have planned for today</p>
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <CalendarIcon className="h-4 w-4" />
-              Pick date
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(newDate) => newDate && setDate(newDate)}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
+    <div className="w-full max-w-6xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      
+      {/* Feature Tools Row */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <PomodoroTimer />
+        <RevisionPlanner />
+        <AchievementWidget />
       </div>
       
-      {loading ? (
-        <div className="flex justify-center my-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-700 mb-2">Today's Progress</h3>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full border-4 border-primary flex items-center justify-center text-lg font-bold text-primary">
-                  {completionPercentage}%
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">
-                    {completedBlocksCount} of {studyBlocks.length} tasks completed
-                  </p>
-                  <Progress value={completionPercentage} className="h-2 mt-1" />
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Main content area - study blocks */}
+        <div className="md:col-span-2">
+          {/* Study blocks section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Your Study Schedule</h2>
+              <AddBlockButton onAddBlock={handleAddBlock} displayAsButton={true} />
+            </div>
+            
+            <Tabs defaultValue="today" onValueChange={handleDateChange}>
+              <div className="px-4 pt-2">
+                <TabsList className="grid grid-cols-3">
+                  <TabsTrigger value="today">Today</TabsTrigger>
+                  <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
+                  <TabsTrigger value="thisWeek">This Week</TabsTrigger>
+                </TabsList>
               </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-700 mb-2">Upcoming</h3>
-              {goals.length > 0 ? (
-                <div className="text-sm">
-                  {goals.slice(0, 3).map((goal, index) => (
-                    <p key={goal.id} className={`flex justify-between py-1 ${
-                      index < goals.slice(0, 3).length - 1 ? "border-b border-gray-100" : ""
-                    }`}>
-                      <span className="text-gray-600">{goal.title}</span>
-                      <span className="text-gray-400">
-                        {new Date(goal.deadline) > new Date() 
-                          ? `In ${Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days` 
-                          : "Overdue"}
-                      </span>
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500 text-center py-2">
-                  No upcoming deadlines
-                </div>
-              )}
-            </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="font-semibold text-gray-700 mb-2">Active Goals</h3>
-              {goals.filter(g => !g.completed).length > 0 ? (
-                <>
-                  {goals.filter(g => !g.completed).slice(0, 2).map((goal) => (
-                    <div key={goal.id} className="mb-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium">{goal.title}</span>
-                        <span className="text-gray-500">{goal.progress}%</span>
-                      </div>
-                      <Progress value={goal.progress} className="h-1.5 mt-1" />
+              
+              <TabsContent value="today" className="m-0">
+                <div className="p-4">
+                  {loading ? (
+                    <div className="flex justify-center my-6">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
                     </div>
-                  ))}
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full mt-2"
-                    onClick={() => navigate("/goals")}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    View all goals
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="text-sm text-gray-500 text-center py-2">
-                    No active goals
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full mt-2"
-                    onClick={() => navigate("/goals")}
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Create a goal
-                  </Button>
-                </>
-              )}
-            </div>
+                  ) : visibleBlocks.length > 0 ? (
+                    <div className="space-y-3">
+                      {visibleBlocks.map(block => (
+                        <StudyBlockCard
+                          key={block.id}
+                          block={block}
+                          onBlockUpdated={loadBlocks}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Clock className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-1">No study blocks for today</h3>
+                      <p className="text-gray-500 mb-4">Add your first study block to get started</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="tomorrow" className="m-0">
+                <div className="p-4">
+                  {loading ? (
+                    <div className="flex justify-center my-6">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  ) : visibleBlocks.length > 0 ? (
+                    <div className="space-y-3">
+                      {visibleBlocks.map(block => (
+                        <StudyBlockCard
+                          key={block.id}
+                          block={block}
+                          onBlockUpdated={loadBlocks}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <CalendarIcon className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-1">No study blocks for tomorrow</h3>
+                      <p className="text-gray-500 mb-4">Plan ahead by adding study blocks</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="thisWeek" className="m-0">
+                <div className="p-4">
+                  {loading ? (
+                    <div className="flex justify-center my-6">
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                  ) : visibleBlocks.length > 0 ? (
+                    <div className="space-y-3">
+                      {visibleBlocks.map(block => (
+                        <StudyBlockCard
+                          key={block.id}
+                          block={block}
+                          onBlockUpdated={loadBlocks}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ListTodo className="mx-auto h-12 w-12 text-gray-300 mb-3" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-1">No study blocks for this week</h3>
+                      <p className="text-gray-500 mb-4">Start planning your study schedule</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
           
-          <Tabs defaultValue="daily" className="mb-6">
-            <div className="flex items-center justify-between">
-              <TabsList>
-                <TabsTrigger value="daily" onClick={() => setView("daily")}>Daily</TabsTrigger>
-                <TabsTrigger value="weekly" onClick={() => setView("weekly")}>Weekly</TabsTrigger>
-              </TabsList>
-              <AddBlockButton onAddBlock={handleAddBlock} />
-            </div>
-            
-            <TabsContent value="daily" className="mt-4">
-              {studyBlocks.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
-                  <p className="text-gray-500 mb-4">No study blocks scheduled for this day</p>
-                  <AddBlockButton onAddBlock={handleAddBlock} displayAsButton />
-                </div>
-              ) : (
-                <div 
-                  className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                >
-                  {studyBlocks.map((block) => (
-                    <StudyBlockCard
-                      key={block.id}
-                      block={block}
-                      onToggleCompletion={(completed) => handleToggleCompletion(block.id, completed)}
-                    />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="weekly" className="mt-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <p className="text-center text-gray-500">Weekly view will show your scheduled blocks for the entire week</p>
-                <div className="flex justify-center mt-4">
-                  <Button variant="outline">
-                    Switch to calendar view
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+          {/* Smart Study Suggestions */}
+          <StudySuggestionsWidget 
+            className="mb-6" 
+            onSelectSuggestion={handleSuggestionSelect}
+            limit={3}
+          />
+        </div>
+        
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Study Companion Widget */}
+          {showCompanion ? (
+            <StudyCompanionWidget 
+              minimized={false} 
+              onMaximize={() => setShowCompanion(true)} 
+            />
+          ) : (
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center gap-2"
+              onClick={() => setShowCompanion(true)}
+            >
+              Show Study Companion
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {/* Floating Add Button for mobile */}
+      <div className="md:hidden">
+        <AddBlockButton onAddBlock={handleAddBlock} />
+      </div>
     </div>
   );
 };
