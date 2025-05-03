@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Subject } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 export interface SubjectData {
   name: string;
@@ -33,9 +34,16 @@ export async function getSubjects(): Promise<Subject[]> {
 }
 
 export async function createSubject(subjectData: SubjectData): Promise<Subject> {
+  // Get the current user's ID
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("User must be logged in to create a subject");
+
   const { data, error } = await supabase
     .from("subjects")
-    .insert([subjectData])
+    .insert([{
+      ...subjectData,
+      user_id: session.user.id
+    }])
     .select()
     .single();
 

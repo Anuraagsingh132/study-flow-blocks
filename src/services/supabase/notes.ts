@@ -52,9 +52,16 @@ export async function getNoteById(id: string): Promise<Note> {
 }
 
 export async function createNote(noteData: NoteData): Promise<Note> {
+  // Get the current user's ID
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("User must be logged in to create a note");
+
   const { data, error } = await supabase
     .from("notes")
-    .insert([noteData])
+    .insert([{
+      ...noteData,
+      user_id: session.user.id
+    }])
     .select()
     .single();
 

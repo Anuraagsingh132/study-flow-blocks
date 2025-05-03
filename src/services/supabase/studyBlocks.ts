@@ -49,9 +49,16 @@ export async function getStudyBlocks(date?: Date): Promise<StudyBlock[]> {
 }
 
 export async function createStudyBlock(blockData: StudyBlockData): Promise<StudyBlock> {
+  // Get the current user's ID
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("User must be logged in to create a study block");
+
   const { data, error } = await supabase
     .from("study_blocks")
-    .insert([blockData])
+    .insert([{
+      ...blockData,
+      user_id: session.user.id
+    }])
     .select()
     .single();
 

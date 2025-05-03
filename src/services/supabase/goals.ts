@@ -56,16 +56,21 @@ export async function getGoals(): Promise<Goal[]> {
 }
 
 export async function createGoal(goalData: GoalData): Promise<Goal> {
+  // Get the current user's ID
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("User must be logged in to create a goal");
+
   // Insert the goal first
   const { data: goal, error: goalError } = await supabase
     .from("goals")
-    .insert([{
+    .insert({
       title: goalData.title,
       description: goalData.description,
       deadline: goalData.deadline,
       progress: 0,
-      completed: false
-    }])
+      completed: false,
+      user_id: session.user.id
+    })
     .select()
     .single();
 
@@ -80,6 +85,18 @@ export async function createGoal(goalData: GoalData): Promise<Goal> {
     title: step.title,
     completed: false
   }));
+
+  if (stepsToInsert.length === 0) {
+    return {
+      id: goal.id,
+      title: goal.title,
+      description: goal.description,
+      deadline: goal.deadline,
+      completed: goal.completed,
+      progress: goal.progress,
+      steps: []
+    };
+  }
 
   const { data: steps, error: stepsError } = await supabase
     .from("goal_steps")

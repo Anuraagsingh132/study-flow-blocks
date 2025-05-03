@@ -10,9 +10,10 @@ import { StudyBlock, Note, Goal, Priority } from "@/types";
 
 interface AddBlockButtonProps {
   onAddBlock: (blockType: string, data: any) => void;
+  displayAsButton?: boolean;
 }
 
-const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock }) => {
+const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock, displayAsButton }) => {
   const [open, setOpen] = useState(false);
   const [blockType, setBlockType] = useState("study");
   const [formData, setFormData] = useState({
@@ -65,9 +66,16 @@ const AddBlockButton: React.FC<AddBlockButtonProps> = ({ onAddBlock }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="fixed right-6 bottom-6 rounded-full h-14 w-14 shadow-lg">
-          <Plus size={24} />
-        </Button>
+        {displayAsButton ? (
+          <Button className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Study Block
+          </Button>
+        ) : (
+          <Button className="fixed right-6 bottom-6 rounded-full h-14 w-14 shadow-lg">
+            <Plus size={24} />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
