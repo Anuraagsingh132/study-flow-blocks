@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useForm } from 'react-hook-form';
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -21,7 +19,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { v4 as uuidv4 } from 'uuid';
+import { generateId } from "@/utils/idGenerator";
 
 const AIAssistant: React.FC = () => {
   const { user } = useAuth();
@@ -73,7 +71,7 @@ const AIAssistant: React.FC = () => {
       
       // Add user message to the chat
       const userMessage: Message = {
-        id: uuidv4(),
+        id: generateId(), // Use our custom generateId instead of uuidv4
         role: 'user',
         content: data.message,
         timestamp: new Date()
@@ -104,7 +102,7 @@ const AIAssistant: React.FC = () => {
       
       // Add AI response to the chat
       const aiMessage: Message = {
-        id: uuidv4(),
+        id: generateId(), // Use our custom generateId instead of uuidv4
         role: 'assistant',
         content: response.data.reply,
         timestamp: new Date()
