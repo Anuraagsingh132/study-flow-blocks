@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+
+import React, { useState, useEffect, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,7 +12,7 @@ import {
   Maximize2, 
   Coffee, 
   PlayCircle, 
-  LevelUp
+  Sword 
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -284,7 +286,7 @@ const StudyCompanionWidget: React.FC<CompanionWidgetProps> = ({
       >
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <Bot className="h-6 w-6 text-primary" />
+            <MessageCircle className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h4 className="font-medium">{companion.name}</h4>
@@ -303,7 +305,7 @@ const StudyCompanionWidget: React.FC<CompanionWidgetProps> = ({
     >
       <div className="bg-primary/10 p-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
+          <MessageCircle className="h-5 w-5 text-primary" />
           <h3 className="font-medium">{companion.name}</h3>
         </div>
         <div className="text-sm font-medium">Level {companion.level}</div>
