@@ -1,4 +1,3 @@
-
 export type Priority = "low" | "medium" | "high";
 
 export interface StudyBlock {
@@ -100,4 +99,4 @@ export interface StudyCompanion {
 }
 
 export type CompanionType = "owl" | "cat" | "dog" | "robot";
-export type CompanionMood = "happy" | "normal" | "tired" | "excited";
+export type CompanionMood = 'happy' | 'excited' | 'normal' | 'tired';

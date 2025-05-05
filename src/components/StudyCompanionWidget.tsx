@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, OrbitControls } from "@react-three/drei";
@@ -13,9 +12,8 @@ import {
   feedCompanion,
   playWithCompanion,
   levelUpCompanion,
-  CompanionMood
 } from "@/services/supabase/companion";
-import { StudyCompanion, CompanionType } from "@/types";
+import { StudyCompanion, CompanionType, CompanionMood } from "@/types";
 import { toast } from "sonner";
 import * as THREE from "three";
 

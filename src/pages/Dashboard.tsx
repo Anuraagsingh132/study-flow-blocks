@@ -5,7 +5,7 @@ import AddBlockButton from "@/components/AddBlockButton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar as CalendarIcon, Clock, ListTodo } from "lucide-react";
-import { getStudyBlocks, createStudyBlock } from "@/services/supabase/studyBlocks";
+import { getStudyBlocks, createStudyBlock, updateStudyBlock } from "@/services/supabase/studyBlocks";
 import { StudyBlock } from "@/types";
 import { toast } from "sonner";
 import { format, isSameDay, parseISO, isAfter, addDays } from "date-fns";
@@ -72,6 +72,22 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error adding study block:", error);
       toast.error("Failed to add study block");
+    }
+  };
+
+  const handleToggleCompletion = async (block: StudyBlock, completed: boolean) => {
+    try {
+      await updateStudyBlock(block.id, { completed });
+      
+      // Update local state
+      setBlocks(blocks.map(b => 
+        b.id === block.id ? { ...b, completed } : b
+      ));
+      
+      toast.success(completed ? "Study block completed!" : "Study block marked incomplete");
+    } catch (error) {
+      console.error("Error updating study block:", error);
+      toast.error("Failed to update study block");
     }
   };
 
@@ -153,6 +169,7 @@ const Dashboard = () => {
                         <StudyBlockCard
                           key={block.id}
                           block={block}
+                          onToggleCompletion={(completed) => handleToggleCompletion(block, completed)}
                           onBlockUpdated={loadBlocks}
                         />
                       ))}
@@ -179,6 +196,7 @@ const Dashboard = () => {
                         <StudyBlockCard
                           key={block.id}
                           block={block}
+                          onToggleCompletion={(completed) => handleToggleCompletion(block, completed)}
                           onBlockUpdated={loadBlocks}
                         />
                       ))}
@@ -205,6 +223,7 @@ const Dashboard = () => {
                         <StudyBlockCard
                           key={block.id}
                           block={block}
+                          onToggleCompletion={(completed) => handleToggleCompletion(block, completed)}
                           onBlockUpdated={loadBlocks}
                         />
                       ))}
