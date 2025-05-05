@@ -4,12 +4,16 @@ import { StudyBlock } from "@/types";
 import { format, addDays, startOfWeek, endOfWeek, isSameDay } from "date-fns";
 
 export const getStudyBlocks = async (selectedDate?: Date): Promise<StudyBlock[]> => {
+  // Get the current user's session
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
   // If no date is provided, fetch all blocks (for Progress page)
   if (!selectedDate) {
     const { data, error } = await supabase
       .from('study_blocks')
       .select('*')
-      .eq('user_id', supabase.auth.currentUser?.id)
+      .eq('user_id', userId)
       .order('start_time', { ascending: true });
 
     if (error) {
@@ -26,7 +30,7 @@ export const getStudyBlocks = async (selectedDate?: Date): Promise<StudyBlock[]>
   const { data, error } = await supabase
     .from('study_blocks')
     .select('*')
-    .eq('user_id', supabase.auth.currentUser?.id)
+    .eq('user_id', userId)
     .gte('start_time', `${formattedDate}T00:00:00+00:00`)
     .lt('start_time', `${format(addDays(selectedDate, 1), 'yyyy-MM-dd')}T00:00:00+00:00`)
     .order('start_time', { ascending: true });
@@ -40,6 +44,10 @@ export const getStudyBlocks = async (selectedDate?: Date): Promise<StudyBlock[]>
 };
 
 export const createStudyBlock = async (block: Omit<StudyBlock, 'id' | 'created_at' | 'user_id' | 'completed'>): Promise<StudyBlock> => {
+  // Get the current user's session
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
   // Transform the block data to match database field names
   const dbBlock = {
     subject: block.subject,
@@ -51,7 +59,7 @@ export const createStudyBlock = async (block: Omit<StudyBlock, 'id' | 'created_a
 
   const { data, error } = await supabase
     .from('study_blocks')
-    .insert({ ...dbBlock, user_id: supabase.auth.currentUser?.id })
+    .insert({ ...dbBlock, user_id: userId })
     .select('*')
     .single();
 
