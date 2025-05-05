@@ -58,8 +58,8 @@ const Dashboard = () => {
       const newBlock = await createStudyBlock({
         subject: data.subject,
         topic: data.topic,
-        start_time: data.startTime.toISOString(),
-        end_time: data.endTime.toISOString(),
+        startTime: data.startTime.toISOString(),
+        endTime: data.endTime.toISOString(),
         priority: data.priority,
       });
       

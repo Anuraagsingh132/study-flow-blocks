@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,7 +49,7 @@ const ProgressPage: React.FC = () => {
           break;
       }
       
-      // Load study blocks for the period
+      // Load study blocks without a specific date to get all blocks
       const blocks = await getStudyBlocks();
       const goals = await getGoals();
       const subjects = await getSubjects();
