@@ -1,117 +1,191 @@
-
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
+  Home,
   LayoutDashboard,
-  BookOpen,
-  FileText,
-  Target,
-  LineChart,
+  ListChecks,
+  Book,
+  TrendingUp,
   Settings,
-  Menu,
   ChevronLeft,
   ChevronRight,
-  LogOut,
+  Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/context/AuthContext";
 
-interface SidebarProps {
-  collapsed: boolean;
-  setCollapsed: (collapsed: boolean) => void;
-}
+const Sidebar = ({ collapsed, setCollapsed }) => {
+  const [isHovered, setIsHovered] = useState(false);
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
-  const location = useLocation();
-  const { signOut } = useAuth();
-  
-  const menuItems = [
-    {
-      title: "Dashboard",
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      path: "/",
-    },
-    {
-      title: "Subjects",
-      icon: <BookOpen className="h-5 w-5" />,
-      path: "/subjects",
-    },
-    {
-      title: "Notes",
-      icon: <FileText className="h-5 w-5" />,
-      path: "/notes",
-    },
-    {
-      title: "Goals",
-      icon: <Target className="h-5 w-5" />,
-      path: "/goals",
-    },
-    {
-      title: "Progress",
-      icon: <LineChart className="h-5 w-5" />,
-      path: "/progress",
-    },
-    {
-      title: "Settings",
-      icon: <Settings className="h-5 w-5" />,
-      path: "/settings",
-    },
-  ];
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
 
   return (
-    <div
-      className={cn(
-        "bg-white border-r border-gray-200 flex flex-col transition-all duration-300",
-        collapsed ? "w-[70px]" : "w-[240px]"
-      )}
+    <aside
+      className={`bg-card border-r transition-all duration-300 h-screen ${
+        collapsed ? "w-[70px]" : "w-64"
+      }`}
     >
-      <div className="flex items-center h-[60px] px-4 border-b border-gray-200">
-        {!collapsed && (
-          <h1 className="text-xl font-bold text-primary">StudyFlow</h1>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("rounded-full", collapsed ? "mx-auto" : "ml-auto")}
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-        </Button>
-      </div>
-
-      <div className="flex flex-col flex-1 py-4 px-3">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-md mb-1 transition-colors",
-              location.pathname === item.path
-                ? "bg-primary/10 text-primary"
-                : "text-gray-600 hover:bg-gray-100"
-            )}
-          >
-            {item.icon}
-            {!collapsed && <span>{item.title}</span>}
-          </Link>
-        ))}
-      </div>
-
-      <div className="p-3 mt-auto">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50", 
-            collapsed && "justify-center"
+      <div className="flex items-center justify-between px-3 py-2">
+        <Link to="/" className="flex items-center">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className={`h-8 w-auto transition-all duration-300 ${
+              collapsed ? "scale-75" : "scale-100"
+            }`}
+          />
+          {!collapsed && <span className="ml-2 font-bold">StudyApp</span>}
+        </Link>
+        <button onClick={toggleSidebar} className="focus:outline-none">
+          {collapsed ? (
+            <ChevronRight className="h-6 w-6" />
+          ) : (
+            <ChevronLeft className="h-6 w-6" />
           )}
-          onClick={signOut}
-        >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="ml-2">Sign Out</span>}
-        </Button>
+        </button>
       </div>
-    </div>
+
+      <div className="px-3 py-2">
+        <nav className="space-y-1">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Dashboard</span>}
+          </NavLink>
+
+          <NavLink
+            to="/subjects"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <Book className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Subjects</span>}
+          </NavLink>
+
+          <NavLink
+            to="/notes"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <ListChecks className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Notes</span>}
+          </NavLink>
+
+          <NavLink
+            to="/goals"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <Home className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Goals</span>}
+          </NavLink>
+
+          <NavLink
+            to="/progress"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <TrendingUp className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Progress</span>}
+          </NavLink>
+          
+          <NavLink
+            to="/ai-assistant"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <Sparkles className="mr-2 h-4 w-4" />
+            {!collapsed && <span>AI Assistant</span>}
+          </NavLink>
+
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center px-3 py-2 rounded-md text-sm transition-colors",
+                isActive
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50"
+              )
+            }
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            {!collapsed && <span>Settings</span>}
+          </NavLink>
+        </nav>
+      </div>
+
+      <div className="absolute bottom-4 left-0 w-full px-3">
+        <div className="relative group">
+          <div
+            className="bg-secondary rounded-md p-2 transition-all duration-300"
+            style={{ width: collapsed ? "calc(70px - 24px)" : "calc(100% - 24px)" }}
+          >
+            {!collapsed && (
+              <div className="text-xs text-muted-foreground">
+                Upgrade to Pro
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <img
+                  src="/gem.png"
+                  alt="Gem"
+                  className="h-5 w-5 mr-1"
+                />
+                {!collapsed && <span className="text-sm font-medium">Pro</span>}
+              </div>
+              {!collapsed && (
+                <span className="text-xs text-muted-foreground">$9.99/mo</span>
+              )}
+            </div>
+          </div>
+          <button className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 focus:outline-none">
+            {/* You can add an overlay or animation here */}
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 };
 

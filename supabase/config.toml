@@ -1,1 +1,25 @@
+
 project_id = "ayuatdzalyyiebvmvdit"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+
+[inbucket]
+enabled = true
+
+[functions.gemini-ai]
+verify_jwt = false

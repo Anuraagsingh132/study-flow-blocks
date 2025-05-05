@@ -11,6 +11,7 @@ import GoalsPage from "./pages/GoalsPage";
 import SubjectsPage from "./pages/SubjectsPage";
 import ProgressPage from "./pages/ProgressPage";
 import SettingsPage from "./pages/SettingsPage";
+import AIAssistantPage from "./pages/AIAssistantPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/AuthPage";
 import { AuthProvider } from "./context/AuthContext";
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/notes" element={<NotesPage />} />
                 <Route path="/goals" element={<GoalsPage />} />
                 <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/ai-assistant" element={<AIAssistantPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
             </Route>
