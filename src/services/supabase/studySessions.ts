@@ -152,11 +152,52 @@ export async function getUserStats(): Promise<UserStats> {
     .from("user_stats")
     .select("*")
     .eq("user_id", session.user.id)
-    .single();
+    .maybeSingle(); // Changed from .single() to .maybeSingle()
 
   if (error) {
     console.error("Error getting user stats:", error);
     throw error;
+  }
+
+  // If no data found, create default user stats
+  if (!data) {
+    const defaultStats = {
+      level: 1,
+      currentXp: 0,
+      totalXp: 0,
+      studyStreak: 0,
+      lastStudyDate: null
+    };
+
+    try {
+      // Insert default stats
+      const { data: newStats, error: insertError } = await supabase
+        .from("user_stats")
+        .insert({
+          user_id: session.user.id,
+          level: defaultStats.level,
+          current_xp: defaultStats.currentXp,
+          total_xp: defaultStats.totalXp,
+          study_streak: defaultStats.studyStreak,
+          last_study_date: defaultStats.lastStudyDate
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+      
+      return {
+        level: newStats.level,
+        currentXp: newStats.current_xp,
+        totalXp: newStats.total_xp,
+        studyStreak: newStats.study_streak,
+        lastStudyDate: newStats.last_study_date
+      };
+    } catch (insertError) {
+      console.error("Error creating default user stats:", insertError);
+      // Return default stats even if insert fails
+      return defaultStats;
+    }
   }
 
   return {

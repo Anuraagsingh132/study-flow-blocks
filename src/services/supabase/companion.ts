@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { StudyCompanion, CompanionMood, CompanionType } from "@/types";
+import { StudyCompanion, CompanionType } from "@/types";
 
 export async function getStudyCompanion(): Promise<StudyCompanion | null> {
   // Get the current user's ID
@@ -11,11 +10,53 @@ export async function getStudyCompanion(): Promise<StudyCompanion | null> {
     .from("study_companion")
     .select("*")
     .eq("user_id", session.user.id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error("Error getting study companion:", error);
     return null;
+  }
+
+  // If no data found, create a default companion
+  if (!data) {
+    try {
+      const defaultCompanion = {
+        name: "Buddy",
+        type: "owl" as CompanionType,
+        level: 1,
+        happiness: 80,
+        energy: 100,
+        lastInteraction: new Date().toISOString()
+      };
+
+      const { data: newCompanion, error: insertError } = await supabase
+        .from("study_companion")
+        .insert({
+          user_id: session.user.id,
+          name: defaultCompanion.name,
+          type: defaultCompanion.type,
+          level: defaultCompanion.level,
+          happiness: defaultCompanion.happiness,
+          energy: defaultCompanion.energy,
+          last_interaction: defaultCompanion.lastInteraction
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      return {
+        name: newCompanion.name,
+        type: newCompanion.type,
+        level: newCompanion.level,
+        happiness: newCompanion.happiness,
+        energy: newCompanion.energy,
+        lastInteraction: newCompanion.last_interaction
+      };
+    } catch (insertError) {
+      console.error("Error creating default study companion:", insertError);
+      return null;
+    }
   }
 
   return {
@@ -199,6 +240,8 @@ export async function playWithCompanion(): Promise<StudyCompanion | null> {
     lastInteraction: data.last_interaction
   };
 }
+
+export type CompanionMood = 'happy' | 'excited' | 'normal' | 'tired';
 
 export function getCompanionMood(companion: StudyCompanion): CompanionMood {
   if (!companion) return "normal";

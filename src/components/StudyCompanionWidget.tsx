@@ -1,20 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, OrbitControls } from "@react-three/drei";
+import React, { useState, useEffect } from "react";
+import { Canvas } from "@react-three/fiber";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Sword, Heart, Coffee, Bot } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { 
+  Flame, 
+  Heart, 
+  MessageCircle, 
+  Minimize2, 
+  Maximize2, 
+  Coffee, 
+  PlayCircle, 
+  LevelUp
+} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { 
   getStudyCompanion, 
   updateCompanion, 
+  feedCompanion, 
+  playWithCompanion, 
+  levelUpCompanion, 
   getCompanionMood, 
-  feedCompanion,
-  playWithCompanion,
-  levelUpCompanion,
+  type CompanionMood 
 } from "@/services/supabase/companion";
-import { StudyCompanion, CompanionType, CompanionMood } from "@/types";
+import { StudyCompanion, CompanionType } from "@/types";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 import * as THREE from "three";
 
 // 3D Model components
